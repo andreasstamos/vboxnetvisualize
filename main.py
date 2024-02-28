@@ -51,13 +51,22 @@ for vm in vms:
         .stdout.decode()
         .strip()
     )
-    n = list(re.findall(r'intnet\d="(.*)"', details))
+    n = list(re.findall(r'intnet(\d)="(\w*)"', details))
+    n = list(
+        (net, re.search(f'cableconnected{i}="(\w*)"', details).group(1)) for i, net in n
+    )
     if len(n) == 1:
         node = pydot.Node(vm, style="filled", fillcolor="red")
     else:
         node = pydot.Node(vm, shape="box", style="filled", fillcolor="green")
     g.add_node(node)
-    for net in n:
-        g.add_edge(pydot.Edge(node, get_net(net)))
+    for net, state in n:
+        if state == "on":
+            g.add_edge(pydot.Edge(node, get_net(net)))
+        else:
+            g.add_edge(
+                pydot.Edge(node, get_net(net), color="red", style="dashed", penwidth=2)
+            )
+
 
 Image.open(io.BytesIO(g.create_png(prog="neato"))).show()
