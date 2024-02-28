@@ -51,7 +51,7 @@ for vm in vms:
         .stdout.decode()
         .strip()
     )
-    n = set(re.findall(r'intnet\d="(.*)"', details))
+    n = list(re.findall(r'intnet\d="(.*)"', details))
     if len(n) == 1:
         node = pydot.Node(vm, style="filled", fillcolor="red")
     else:
