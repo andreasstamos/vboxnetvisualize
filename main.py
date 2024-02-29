@@ -20,15 +20,20 @@ import re
 import pydot
 import io
 from PIL import Image
+import sys
+
 
 CMD = "VBoxManage"
+if sys.platform == "win32":
+    CMD = r"C:\Program Files\Oracle\VirtualBox\VBoxManage.exe"
 
 vms = (
     subprocess.run([CMD, "list", "vms"], capture_output=True)
     .stdout.decode()
     .strip()
-    .split("\n")
+    .splitlines()
 )
+
 vms = list(re.match(r'"(.*)"', ln).group(1) for ln in vms)
 
 g = pydot.Dot(graph_type="graph")
@@ -53,7 +58,8 @@ for vm in vms:
     )
     n = list(re.findall(r'intnet(\d)="(\w*)"', details))
     n = list(
-        (net, re.search(f'cableconnected{i}="(\w*)"', details).group(1)) for i, net in n
+        (net, re.search(f"cableconnected{i}" r'="(\w*)"', details).group(1))
+        for i, net in n
     )
     if len(n) == 1:
         node = pydot.Node(vm, style="filled", fillcolor="red")
